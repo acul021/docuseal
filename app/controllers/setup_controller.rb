@@ -49,9 +49,9 @@ class SetupController < ApplicationController
   private
 
   def user_params
-    return {} unless params[:user]
+    return { role: User::ADMIN_ROLE } unless params[:user]
 
-    params.require(:user).permit(:first_name, :last_name, :email, :password)
+    params.require(:user).permit(:first_name, :last_name, :email, :password).merge(role: User::ADMIN_ROLE)
   end
 
   def account_params

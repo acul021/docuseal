@@ -18,7 +18,7 @@ module Users
       identity = UserOauthIdentity.find_by(provider: auth.provider, uid: auth.uid)
       user     = identity&.user || User.find_by(email: email, account: account)
 
-      return redirect_to new_user_session_path, alert: I18n.t('sso_user_not_found') unless user
+      user ||= provision_sso_user(account, email, auth)
 
       unless user.active_for_authentication?
         return redirect_to new_user_session_path, alert: I18n.t('your_account_is_locked')
@@ -57,6 +57,20 @@ module Users
 
     def oauth_config_for(account)
       EncryptedConfig.find_by(account: account, key: EncryptedConfig::OAUTH_CONFIGS_KEY)&.value
+    end
+
+    def provision_sso_user(account, email, auth)
+      first_name = auth.info.first_name.presence || auth.info.name.to_s.split(' ', 2).first
+      last_name  = auth.info.last_name.presence  || auth.info.name.to_s.split(' ', 2).last
+
+      account.users.create!(
+        email: email,
+        first_name: first_name,
+        last_name: last_name,
+        role: User::VIEWER_ROLE,
+        password: SecureRandom.hex(32),
+        confirmed_at: Time.current
+      )
     end
 
     def email_domain_allowed?(email, config)

@@ -4,6 +4,25 @@ class Ability
   include CanCan::Ability
 
   def initialize(user)
+    # Resources every authenticated user manages for themselves, regardless of role.
+    can :manage, EncryptedUserConfig, user_id: user.id
+    can :manage, UserConfig, user_id: user.id
+    can :manage, AccessToken, user_id: user.id
+    can :manage, McpToken, user_id: user.id
+    can :manage, :mcp
+
+    if user.admin?
+      admin_abilities(user)
+    elsif user.editor?
+      editor_abilities(user)
+    elsif user.viewer?
+      viewer_abilities(user)
+    end
+  end
+
+  private
+
+  def admin_abilities(user)
     can %i[read create update], Template, Abilities::TemplateConditions.collection(user) do |template|
       Abilities::TemplateConditions.entity(template, user:, ability: 'manage')
     end
@@ -15,14 +34,34 @@ class Ability
     can :manage, Submitter, account_id: user.account_id
     can :manage, User, account_id: user.account_id
     can :manage, EncryptedConfig, account_id: user.account_id
-    can :manage, EncryptedUserConfig, user_id: user.id
     can :manage, AccountConfig, account_id: user.account_id
-    can :manage, UserConfig, user_id: user.id
     can :manage, Account, id: user.account_id
-    can :manage, AccessToken, user_id: user.id
-    can :manage, McpToken, user_id: user.id
     can :manage, WebhookUrl, account_id: user.account_id
+  end
 
-    can :manage, :mcp
+  def editor_abilities(user)
+    can %i[read create update], Template, Abilities::TemplateConditions.collection(user) do |template|
+      Abilities::TemplateConditions.entity(template, user:, ability: 'manage')
+    end
+
+    can :destroy, Template, account_id: user.account_id, author_id: user.id
+    can :manage, TemplateFolder, account_id: user.account_id
+    can :manage, TemplateSharing, template: { account_id: user.account_id }
+    can :manage, Submission, account_id: user.account_id
+    can :manage, Submitter, account_id: user.account_id
+    can :read, User, account_id: user.account_id
+    can :read, Account, id: user.account_id
+  end
+
+  def viewer_abilities(user)
+    can :read, Template, Abilities::TemplateConditions.collection(user) do |template|
+      Abilities::TemplateConditions.entity(template, user:, ability: 'read')
+    end
+
+    can :read, TemplateFolder, account_id: user.account_id
+    can :read, Submission, account_id: user.account_id
+    can :read, Submitter, account_id: user.account_id
+    can :read, User, account_id: user.account_id
+    can :read, Account, id: user.account_id
   end
 end

@@ -48,7 +48,9 @@
 #
 class User < ApplicationRecord
   ROLES = [
-    ADMIN_ROLE = 'admin'
+    ADMIN_ROLE  = 'admin',
+    EDITOR_ROLE = 'editor',
+    VIEWER_ROLE = 'viewer'
   ].freeze
 
   EMAIL_REGEXP = /[^@;,<>\s]+@[^@;,<>\s]+/
@@ -73,7 +75,6 @@ class User < ApplicationRecord
   devise :two_factor_authenticatable, :recoverable, :rememberable, :validatable, :trackable, :lockable,
          :omniauthable, omniauth_providers: [:oidc]
 
-  attribute :role, :string, default: ADMIN_ROLE
   attribute :uuid, :string, default: -> { SecureRandom.uuid }
 
   scope :active, -> { where(archived_at: nil) }
@@ -94,10 +95,22 @@ class User < ApplicationRecord
     true
   end
 
+  def admin?
+    role == ADMIN_ROLE
+  end
+
+  def editor?
+    role == EDITOR_ROLE
+  end
+
+  def viewer?
+    role == VIEWER_ROLE
+  end
+
   def sidekiq?
     return true if Rails.env.development?
 
-    role == 'admin'
+    admin?
   end
 
   def self.sign_in_after_reset_password
