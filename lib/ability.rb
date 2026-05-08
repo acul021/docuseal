@@ -10,6 +10,7 @@ class Ability
     can :manage, AccessToken, user_id: user.id
     can :manage, McpToken, user_id: user.id
     can :manage, :mcp
+    can %i[read update], User, id: user.id
 
     if user.admin?
       admin_abilities(user)
