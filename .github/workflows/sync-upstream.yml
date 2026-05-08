@@ -1,0 +1,99 @@
+name: sync-upstream
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      auto_merge:
+        description: 'Attempt to fast-forward master directly instead of opening a PR'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  UPSTREAM_REPO: docusealco/docuseal
+  UPSTREAM_BRANCH: master
+  TARGET_BRANCH: master
+  SYNC_BRANCH: sync/upstream
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
+          git fetch upstream "${UPSTREAM_BRANCH}"
+          echo "UPSTREAM_SHA=$(git rev-parse upstream/${UPSTREAM_BRANCH})" >> "$GITHUB_ENV"
+          echo "TARGET_SHA=$(git rev-parse origin/${TARGET_BRANCH})" >> "$GITHUB_ENV"
+
+      - name: Check if already up to date
+        id: check
+        run: |
+          if git merge-base --is-ancestor "${UPSTREAM_SHA}" "${TARGET_SHA}"; then
+            echo "Fork is already up to date with upstream."
+            echo "uptodate=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "uptodate=false" >> "$GITHUB_OUTPUT"
+            echo "Upstream has $(git rev-list --count ${TARGET_SHA}..${UPSTREAM_SHA}) new commit(s)."
+          fi
+
+      - name: Fast-forward master (auto_merge=true only)
+        if: steps.check.outputs.uptodate == 'false' && inputs.auto_merge == 'true'
+        run: |
+          git checkout "${TARGET_BRANCH}"
+          if git merge --ff-only "upstream/${UPSTREAM_BRANCH}"; then
+            git push origin "${TARGET_BRANCH}"
+            echo "ff_done=true" >> "$GITHUB_ENV"
+          else
+            echo "Fast-forward not possible (fork has diverged) — falling back to PR flow."
+            echo "ff_done=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Push sync branch
+        if: steps.check.outputs.uptodate == 'false' && env.ff_done != 'true'
+        run: |
+          git push origin "+${UPSTREAM_SHA}:refs/heads/${SYNC_BRANCH}"
+
+      - name: Open or update pull request
+        if: steps.check.outputs.uptodate == 'false' && env.ff_done != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          existing=$(gh pr list --head "${SYNC_BRANCH}" --base "${TARGET_BRANCH}" --state open --json number --jq '.[0].number' || true)
+          short_upstream=$(echo "${UPSTREAM_SHA}" | cut -c1-7)
+          ahead=$(git rev-list --count ${TARGET_SHA}..${UPSTREAM_SHA})
+          title="Sync upstream ${UPSTREAM_REPO}@${short_upstream} (${ahead} commits)"
+          body=$(cat <<EOF
+          Automated sync from \`${UPSTREAM_REPO}:${UPSTREAM_BRANCH}\`.
+
+          - Upstream HEAD: \`${UPSTREAM_SHA}\`
+          - Fork HEAD: \`${TARGET_SHA}\`
+          - New commits: ${ahead}
+
+          Review the diff and merge when ready. If there are conflicts, GitHub will surface them on this PR.
+          EOF
+          )
+          if [ -n "$existing" ]; then
+            echo "Updating existing PR #$existing"
+            gh pr edit "$existing" --title "$title" --body "$body"
+          else
+            gh pr create --base "${TARGET_BRANCH}" --head "${SYNC_BRANCH}" --title "$title" --body "$body" --label "upstream-sync"
+          fi
