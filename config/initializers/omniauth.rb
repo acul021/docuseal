@@ -31,12 +31,18 @@ Rails.application.config.middleware.use OmniAuth::Builder do
 
              strategy = env['omniauth.strategy']
              strategy.options[:issuer]        = config['issuer']
-             strategy.options[:client_id]     = config['client_id']
-             strategy.options[:client_secret] = config['client_secret']
              strategy.options[:discovery]     = config.fetch('discovery', true)
              strategy.options[:scope]         = config.fetch('scope', %w[openid email profile]).map(&:to_sym)
              strategy.options[:uid_field]     = (config['uid_field'] || 'sub').to_sym
              strategy.options[:response_type] = :code
              strategy.options[:pkce]          = true
+             strategy.options[:client_options].identifier = config['client_id']
+             strategy.options[:client_options].secret     = config['client_secret']
+             url_options = Docuseal.default_url_options
+             strategy.options[:client_options].redirect_uri =
+               URI::Generic.build(scheme: url_options[:protocol] || 'http',
+                                  host: url_options[:host],
+                                  port: url_options[:port],
+                                  path: '/auth/oidc/callback').to_s
            }
 end

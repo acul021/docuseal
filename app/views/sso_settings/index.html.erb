@@ -5,7 +5,7 @@
     <% value = @encrypted_config.value || {} %>
     <% if value['issuer'].present? %>
       <div class="alert alert-success mb-4">
-        <%= svg_icon('check_circle', class: 'w-5 h-5') %>
+        <%= svg_icon('circle_check', class: 'w-5 h-5') %>
         <div>
           <p class="font-medium"><%= t('sso_configured') %></p>
           <p class="text-sm text-gray-600"><%= value['issuer'] %></p>
@@ -58,11 +58,13 @@
       <% end %>
       <div class="flex items-center gap-3 pt-2">
         <%= f.button button_title(title: t('save'), disabled_with: t('saving')), class: 'base-button' %>
-        <% if value['issuer'].present? %>
-          <%= button_to t('remove'), settings_sso_path(@encrypted_config), method: :delete,
-                        data: { confirm: t('are_you_sure') },
-                        class: 'btn btn-ghost text-red-500' %>
-        <% end %>
+      </div>
+    <% end %>
+    <% if value['issuer'].present? %>
+      <div class="pt-2">
+        <%= button_to t('remove'), settings_sso_path(@encrypted_config), method: :delete,
+                      data: { confirm: t('are_you_sure') },
+                      class: 'btn btn-ghost text-red-500' %>
       </div>
     <% end %>
     <% if value['issuer'].present? %>

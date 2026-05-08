@@ -139,6 +139,7 @@ class ApplicationController < ActionController::Base
       policy.frame_src :self
       policy.worker_src :self, :blob
       policy.connect_src :self
+      policy.form_action :self, :https
 
       policy.directives['connect-src'] << 'ws:' if Rails.env.development?
     end
