@@ -16,9 +16,6 @@ gem 'csv-safe', require: false
 gem 'devise'
 gem 'devise-two-factor'
 gem 'dotenv', require: false
-gem 'omniauth'
-gem 'omniauth-rails_csrf_protection'
-gem 'omniauth_openid_connect'
 gem 'email_typo'
 gem 'faraday'
 gem 'faraday-follow_redirects'
@@ -29,6 +26,9 @@ gem 'jwt', require: false
 gem 'lograge'
 gem 'numo-narray-alt', require: false
 gem 'oj'
+gem 'omniauth'
+gem 'omniauth_openid_connect'
+gem 'omniauth-rails_csrf_protection'
 gem 'onnxruntime', require: false
 gem 'pagy'
 gem 'pg', require: false
