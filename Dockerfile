@@ -40,6 +40,9 @@ COPY ./app/views ./app/views
 
 RUN echo "gem 'shakapacker'" > Gemfile && ./bin/shakapacker
 
+FROM scratch AS packs
+COPY --from=webpack /app/public/packs /app/public/packs
+
 FROM ruby:4.0.1-alpine AS app
 
 ENV RAILS_ENV=production
