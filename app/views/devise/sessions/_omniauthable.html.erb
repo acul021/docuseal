@@ -2,5 +2,6 @@
   <div class="divider my-2 text-gray-400 text-sm"><%= t('or') %></div>
   <%= button_to t('sign_in_with_sso'), user_oidc_omniauth_authorize_path,
                 method: :post,
+                form: { data: { turbo: false } },
                 class: 'base-button btn-outline w-full' %>
 <% end %>
