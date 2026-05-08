@@ -401,7 +401,29 @@ en: &en
   webhook_integration_allows_to_send_sms_using_any_provider: Webhook integration allows you to send SMS using any provider
   test: Test
   single_sign_on_with_saml_2_0: Single Sign On with SAML 2.0
+  single_sign_on_oidc: Single Sign-On (OIDC)
   force_sso_disable_login_with_email_and_password: Force SSO (disable login with email and password)
+  sign_in_with_sso: Sign in with SSO
+  redirecting_to_sso: Redirecting to your SSO provider…
+  sso_configured: SSO is configured
+  sso_callback_url: Callback URL
+  sso_callback_url_hint: Register this URL as a redirect URI in your identity provider.
+  sso_issuer: Issuer URL
+  sso_issuer_hint: The OIDC discovery endpoint will be fetched from this URL (/.well-known/openid-configuration).
+  sso_client_id: Client ID
+  sso_client_secret: Client Secret
+  sso_email_domains: Allowed email domains
+  sso_email_domains_hint: Comma-separated list of domains allowed to sign in via SSO. Leave blank to allow all domains.
+  sso_uid_field: UID field
+  sso_uid_field_hint: The OIDC claim used as the stable user identifier. Defaults to "sub".
+  sso_force_login: Force SSO login
+  sso_force_login_hint: Users must authenticate via SSO. Email/password login is disabled.
+  sso_enable_force: Enable
+  sso_disable_force: Disable
+  sso_configuration_not_found: SSO configuration not found for this account.
+  sso_email_domain_not_allowed: Your email domain is not allowed to sign in via SSO.
+  sso_user_not_found: No account found for this email. Please contact your administrator.
+  sso_authentication_failed: SSO authentication failed. Please try again.
   for_aws_s3_compatible_apis_like_minio: For AWS S3 compatible APIs like Minio.
   store_all_files_on_disk: Store all files on disk
   no_configs_are_needed_but_make_sure_your_disk_is_persistent: No configs are needed but make sure your disk is persistent

@@ -1,8 +1,93 @@
 <div class="flex flex-wrap space-y-4 md:flex-nowrap md:space-y-0">
   <%= render 'shared/settings_nav' %>
   <div class="flex-grow max-w-xl mx-auto">
-    <h1 class="text-4xl font-bold mb-4">SAML SSO</h1>
-    <%= render 'placeholder' %>
+    <h1 class="text-4xl font-bold mb-4"><%= t('single_sign_on_oidc') %></h1>
+    <% value = @encrypted_config.value || {} %>
+    <% if value['issuer'].present? %>
+      <div class="alert alert-success mb-4">
+        <%= svg_icon('check_circle', class: 'w-5 h-5') %>
+        <div>
+          <p class="font-medium"><%= t('sso_configured') %></p>
+          <p class="text-sm text-gray-600"><%= value['issuer'] %></p>
+        </div>
+      </div>
+    <% end %>
+    <div class="alert mb-6">
+      <%= svg_icon('info_circle', class: 'w-5 h-5 shrink-0') %>
+      <div>
+        <p class="font-semibold"><%= t('sso_callback_url') %></p>
+        <p class="text-sm font-mono break-all select-all mt-1">
+          <%= user_oidc_omniauth_callback_url %>
+        </p>
+        <p class="text-xs text-gray-500 mt-1"><%= t('sso_callback_url_hint') %></p>
+      </div>
+    </div>
+    <%= form_for @encrypted_config, url: settings_sso_index_path, method: :post,
+                                    html: { autocomplete: 'off', class: 'space-y-4' } do |f| %>
+      <%= f.fields_for :value do |ff| %>
+        <div class="form-control">
+          <%= ff.label :issuer, t('sso_issuer'), class: 'label' %>
+          <%= ff.url_field :issuer, value: value['issuer'], required: true,
+                           placeholder: 'https://login.example.com/realms/myrealm',
+                           class: 'base-input' %>
+          <p class="text-xs text-gray-500 mt-1"><%= t('sso_issuer_hint') %></p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="form-control">
+            <%= ff.label :client_id, t('sso_client_id'), class: 'label' %>
+            <%= ff.text_field :client_id, value: value['client_id'], required: true, class: 'base-input' %>
+          </div>
+          <div class="form-control">
+            <%= ff.label :client_secret, t('sso_client_secret'), class: 'label' %>
+            <%= ff.password_field :client_secret, class: 'base-input',
+                                  required: value['client_secret'].blank?,
+                                  placeholder: value['client_secret'].present? ? '*************' : '' %>
+          </div>
+        </div>
+        <div class="form-control">
+          <%= ff.label :email_domains, t('sso_email_domains'), class: 'label' %>
+          <%= ff.text_field :email_domains, value: Array(value['email_domains']).join(', '),
+                            placeholder: 'example.com, acme.org', class: 'base-input' %>
+          <p class="text-xs text-gray-500 mt-1"><%= t('sso_email_domains_hint') %></p>
+        </div>
+        <div class="form-control">
+          <%= ff.label :uid_field, "#{t('sso_uid_field')} (#{t('optional')})", class: 'label' %>
+          <%= ff.text_field :uid_field, value: value.fetch('uid_field', 'sub'), class: 'base-input' %>
+          <p class="text-xs text-gray-500 mt-1"><%= t('sso_uid_field_hint') %></p>
+        </div>
+      <% end %>
+      <div class="flex items-center gap-3 pt-2">
+        <%= f.button button_title(title: t('save'), disabled_with: t('saving')), class: 'base-button' %>
+        <% if value['issuer'].present? %>
+          <%= button_to t('remove'), settings_sso_path(@encrypted_config), method: :delete,
+                        data: { confirm: t('are_you_sure') },
+                        class: 'btn btn-ghost text-red-500' %>
+        <% end %>
+      </div>
+    <% end %>
+    <% if value['issuer'].present? %>
+      <div class="divider"></div>
+      <div class="form-control">
+        <label class="label cursor-pointer justify-start gap-3">
+          <% force_sso = current_account.account_configs.find_by(key: AccountConfig::FORCE_SSO_AUTH_KEY) %>
+          <% force_sso_enabled = force_sso&.value == true %>
+          <% if force_sso_enabled %>
+            <%= button_to t('sso_disable_force'), account_config_path(force_sso), method: :delete,
+                          class: 'toggle toggle-primary toggle-checked',
+                          data: { turbo_confirm: t('are_you_sure') } %>
+          <% else %>
+            <%= button_to t('sso_enable_force'), account_configs_path,
+                          params: { account_config: { key: AccountConfig::FORCE_SSO_AUTH_KEY, value: '1' } },
+                          class: 'toggle toggle-primary',
+                          method: :post %>
+          <% end %>
+          <div>
+            <p class="font-medium"><%= t('sso_force_login') %></p>
+            <p class="text-sm text-gray-500"><%= t('sso_force_login_hint') %></p>
+          </div>
+        </label>
+      </div>
+    <% end %>
   </div>
   <div class="w-0 md:w-52"></div>
 </div>

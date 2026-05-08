@@ -1,0 +1,6 @@
+<% if @sso_enabled %>
+  <div class="divider my-2 text-gray-400 text-sm"><%= t('or') %></div>
+  <%= button_to t('sign_in_with_sso'), user_oidc_omniauth_authorize_path,
+                method: :post,
+                class: 'base-button btn-outline w-full' %>
+<% end %>

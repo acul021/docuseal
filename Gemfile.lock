@@ -77,11 +77,13 @@ GEM
       uri (>= 0.13.1)
     addressable (2.9.0)
       public_suffix (>= 2.0.2, < 8.0)
+    aes_key_wrap (1.1.0)
     annotaterb (4.22.0)
       activerecord (>= 6.0.0)
       activesupport (>= 6.0.0)
     arabic-letter-connector (0.1.1)
     ast (2.4.3)
+    attr_required (1.0.2)
     aws-eventstream (1.4.0)
     aws-partitions (1.1233.0)
     aws-sdk-core (3.244.0)
@@ -117,6 +119,7 @@ GEM
       parser (>= 2.4)
       smart_properties
     bigdecimal (4.1.0)
+    bindata (2.5.1)
     bindex (0.8.1)
     bootsnap (1.23.0)
       msgpack (~> 1.2)
@@ -179,6 +182,8 @@ GEM
     dotenv (3.2.0)
     drb (2.2.3)
     email_typo (0.2.3)
+    email_validator (2.2.4)
+      activemodel
     erb (6.0.4)
     erb_lint (0.9.0)
       activesupport
@@ -257,6 +262,8 @@ GEM
       os (>= 0.9, < 2.0)
       signet (>= 0.16, < 2.a)
     hashdiff (1.2.1)
+    hashie (5.1.0)
+      logger
     hexapdf (1.6.0)
       cmdparse (~> 3.0, >= 3.0.3)
       geom2d (~> 0.4, >= 0.4.1)
@@ -275,6 +282,13 @@ GEM
       reline (>= 0.4.2)
     jmespath (1.6.2)
     json (2.19.3)
+    json-jwt (1.17.0)
+      activesupport (>= 4.2)
+      aes_key_wrap
+      base64
+      bindata
+      faraday (~> 2.0)
+      faraday-follow_redirects
     jwt (3.1.2)
       base64
     language_server-protocol (3.17.0.5)
@@ -342,12 +356,36 @@ GEM
     oj (3.16.16)
       bigdecimal (>= 3.0)
       ostruct (>= 0.2)
+    omniauth (2.1.4)
+      hashie (>= 3.4.6)
+      logger
+      rack (>= 2.2.3)
+      rack-protection
+    omniauth-rails_csrf_protection (2.0.1)
+      actionpack (>= 4.2)
+      omniauth (~> 2.0)
+    omniauth_openid_connect (0.8.0)
+      omniauth (>= 1.9, < 3)
+      openid_connect (~> 2.2)
     onnxruntime (0.10.1-aarch64-linux)
       ffi
     onnxruntime (0.10.1-arm64-darwin)
       ffi
     onnxruntime (0.10.1-x86_64-linux)
       ffi
+    openid_connect (2.3.1)
+      activemodel
+      attr_required (>= 1.0.0)
+      email_validator
+      faraday (~> 2.0)
+      faraday-follow_redirects
+      json-jwt (>= 1.16)
+      mail
+      rack-oauth2 (~> 2.2)
+      swd (~> 2.0)
+      tzinfo
+      validate_url
+      webfinger (~> 2.0)
     openssl (4.0.1)
     orm_adapter (0.5.0)
     os (1.1.4)
@@ -386,6 +424,17 @@ GEM
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.2.6)
+    rack-oauth2 (2.3.0)
+      activesupport
+      attr_required
+      faraday (~> 2.0)
+      faraday-follow_redirects
+      json-jwt (>= 1.11.0)
+      rack (>= 2.1.0)
+    rack-protection (4.2.1)
+      base64 (>= 0.1.0)
+      logger (>= 1.6.0)
+      rack (>= 3.0.0, < 4)
     rack-proxy (0.7.7)
       rack
     rack-session (2.1.2)
@@ -543,6 +592,11 @@ GEM
     strip_attributes (2.0.1)
       activemodel (>= 3.0, < 9.0)
     strscan (3.1.8)
+    swd (2.0.3)
+      activesupport (>= 3)
+      attr_required (>= 0.0.5)
+      faraday (~> 2.0)
+      faraday-follow_redirects
     thor (1.5.0)
     timeout (0.6.1)
     trailblazer-option (0.1.2)
@@ -568,12 +622,19 @@ GEM
     uniform_notifier (1.18.0)
     uri (1.1.1)
     useragent (0.16.11)
+    validate_url (1.0.15)
+      activemodel (>= 3.0.0)
+      public_suffix
     warden (1.2.9)
       rack (>= 2.0.9)
     web-console (4.3.0)
       actionview (>= 8.0.0)
       bindex (>= 0.4.0)
       railties (>= 8.0.0)
+    webfinger (2.1.3)
+      activesupport
+      faraday (~> 2.0)
+      faraday-follow_redirects
     webmock (3.26.2)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
@@ -630,6 +691,9 @@ DEPENDENCIES
   lograge
   numo-narray-alt
   oj
+  omniauth
+  omniauth-rails_csrf_protection
+  omniauth_openid_connect
   onnxruntime
   pagy
   pg
@@ -662,7 +726,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-  ruby 4.0.1
+  ruby 3.3.6
 
 BUNDLED WITH
   4.0.3

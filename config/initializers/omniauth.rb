@@ -1,0 +1,42 @@
+# frozen_string_literal: true
+
+OmniAuth.config.allowed_request_methods = %i[post]
+OmniAuth.config.silence_get_warning = true
+OmniAuth.config.logger = Rails.logger
+
+Rails.application.config.middleware.use OmniAuth::Builder do
+  provider :openid_connect,
+           name: :oidc,
+           setup: lambda { |env|
+             req = Rack::Request.new(env)
+
+             # Account resolution: POST param (login button) → session (force-SSO flow) → single account (self-hosted)
+             account_uuid = req.POST['account_uuid'].presence ||
+                            env.dig('rack.session', 'oauth_account_uuid').presence
+
+             account = if account_uuid
+                         Account.find_by(uuid: account_uuid)
+                       elsif !Docuseal.multitenant?
+                         Account.first
+                       end
+
+             next unless account
+
+             config = EncryptedConfig.find_by(account: account, key: EncryptedConfig::OAUTH_CONFIGS_KEY)&.value
+
+             next unless config.present?
+
+             # Persist account_uuid in session so the callback can resolve the account
+             env['rack.session']['oauth_account_uuid'] = account.uuid
+
+             strategy = env['omniauth.strategy']
+             strategy.options[:issuer]        = config['issuer']
+             strategy.options[:client_id]     = config['client_id']
+             strategy.options[:client_secret] = config['client_secret']
+             strategy.options[:discovery]     = config.fetch('discovery', true)
+             strategy.options[:scope]         = config.fetch('scope', %w[openid email profile]).map(&:to_sym)
+             strategy.options[:uid_field]     = (config['uid_field'] || 'sub').to_sym
+             strategy.options[:response_type] = :code
+             strategy.options[:pkce]          = true
+           }
+end
