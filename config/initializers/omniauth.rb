@@ -4,13 +4,12 @@ OmniAuth.config.allowed_request_methods = %i[post]
 OmniAuth.config.silence_get_warning = true
 OmniAuth.config.logger = Rails.logger
 
-Rails.application.config.middleware.use OmniAuth::Builder do
+Rails.application.config.middleware.use OmniAuth::Builder do # rubocop:disable Metrics/BlockLength
   provider :openid_connect,
            name: :oidc,
-           setup: lambda { |env|
+           setup: lambda { |env| # rubocop:disable Metrics/BlockLength
              req = Rack::Request.new(env)
 
-             # Account resolution: POST param (login button) → session (force-SSO flow) → single account (self-hosted)
              account_uuid = req.POST['account_uuid'].presence ||
                             env.dig('rack.session', 'oauth_account_uuid').presence
 
@@ -24,9 +23,8 @@ Rails.application.config.middleware.use OmniAuth::Builder do
 
              config = EncryptedConfig.find_by(account: account, key: EncryptedConfig::OAUTH_CONFIGS_KEY)&.value
 
-             next unless config.present?
+             next if config.blank?
 
-             # Persist account_uuid in session so the callback can resolve the account
              env['rack.session']['oauth_account_uuid'] = account.uuid
 
              strategy = env['omniauth.strategy']
