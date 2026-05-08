@@ -2,6 +2,7 @@
 
 class SessionsController < Devise::SessionsController
   before_action :configure_permitted_parameters
+  before_action :set_sso_enabled, only: :new
 
   around_action :with_browser_locale
 
@@ -13,6 +14,12 @@ class SessionsController < Devise::SessionsController
 
       return redirect_to new_registration_path(sign_up: true, user: sign_in_params.slice(:email)),
                          notice: I18n.t('create_a_new_account')
+    end
+
+    user_for_sso = User.find_by(email:)
+    if user_for_sso && force_sso_auth?(user_for_sso.account)
+      session[:oauth_account_uuid] = user_for_sso.account.uuid
+      return render :redirect_to_sso
     end
 
     if User.exists?(email:, otp_required_for_login: true) && sign_in_params[:otp_attempt].blank?
@@ -32,6 +39,18 @@ class SessionsController < Devise::SessionsController
     end
 
     super
+  end
+
+  def set_sso_enabled
+    return if Docuseal.multitenant?
+
+    account = Account.first
+    @sso_enabled = account && EncryptedConfig.exists?(account: account, key: EncryptedConfig::OAUTH_CONFIGS_KEY)
+  end
+
+  def force_sso_auth?(account)
+    config = AccountConfig.find_by(account: account, key: AccountConfig::FORCE_SSO_AUTH_KEY)
+    config&.value == true
   end
 
   def configure_permitted_parameters

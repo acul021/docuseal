@@ -1,0 +1,6 @@
+<div class="max-w-lg mx-auto px-2 text-center mt-16">
+  <p class="text-gray-600 mb-4"><%= t('redirecting_to_sso') %></p>
+  <%= form_tag user_oidc_omniauth_authorize_path, method: :post, id: 'sso-redirect-form', data: { turbo: false } do %>
+  <% end %>
+</div>
+<script>document.getElementById('sso-redirect-form').submit();</script>
