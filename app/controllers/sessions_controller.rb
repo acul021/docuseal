@@ -26,6 +26,11 @@ class SessionsController < Devise::SessionsController
       return render :redirect_to_sso
     end
 
+    if !Docuseal.multitenant? && account_force_sso_auth?
+      set_sso_enabled
+      return render :new, status: :unprocessable_content
+    end
+
     if User.exists?(email:, otp_required_for_login: true) && sign_in_params[:otp_attempt].blank?
       return render :otp, locals: { resource: User.new(sign_in_params) }, status: :unprocessable_content
     end
@@ -50,6 +55,12 @@ class SessionsController < Devise::SessionsController
 
     account = Account.first
     @sso_enabled = account && EncryptedConfig.exists?(account: account, key: EncryptedConfig::OAUTH_CONFIGS_KEY)
+    @force_sso_enabled = @sso_enabled && force_sso_auth?(account)
+  end
+
+  def account_force_sso_auth?
+    account = Account.first
+    account && force_sso_auth?(account)
   end
 
   def force_sso_auth?(account)
