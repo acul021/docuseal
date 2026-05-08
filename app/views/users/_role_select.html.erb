@@ -1,8 +1,4 @@
 <div class="form-control">
   <%= f.label :role, class: 'label' %>
-  <%= f.select :role, nil, {}, class: 'base-select' do %>
-    <option value="admin"><%= t('admin') %></option>
-    <option value="editor"><%= t('editor') %></option>
-    <option value="viewer"><%= t('viewer') %></option>
-  <% end %>
+  <%= f.select :role, options_for_select([[t('admin'), 'admin'], [t('editor'), 'editor'], [t('viewer'), 'viewer']], f.object.role), {}, class: 'base-select' %>
 </div>
