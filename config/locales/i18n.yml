@@ -416,6 +416,8 @@ en: &en
   sso_email_domains_hint: Comma-separated list of domains allowed to sign in via SSO. Leave blank to allow all domains.
   sso_uid_field: UID field
   sso_uid_field_hint: The OIDC claim used as the stable user identifier. Defaults to "sub".
+  sso_role_attribute: Role attribute
+  sso_role_attribute_hint: 'OIDC claim that carries the user role. When set, the user role is synced on each login. Recognized values:'
   sso_force_login: Force SSO login
   sso_force_login_hint: Users must authenticate via SSO. Email/password login is disabled.
   sso_enable_force: Enable

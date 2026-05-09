@@ -60,6 +60,19 @@
           <%= ff.text_field :uid_field, value: value.fetch('uid_field', 'sub'), class: 'base-input' %>
           <p class="text-xs text-gray-500 mt-1"><%= t('sso_uid_field_hint') %></p>
         </div>
+        <div class="form-control">
+          <%= ff.label :role_attribute, "#{t('sso_role_attribute')} (#{t('optional')})", class: 'label' %>
+          <%= ff.text_field :role_attribute,
+                            value: value['role_attribute'],
+                            placeholder: 'docuseal_role',
+                            class: 'base-input' %>
+          <p class="text-xs text-gray-500 mt-1"><%= t('sso_role_attribute_hint') %></p>
+          <ul class="text-xs text-gray-500 mt-1 list-disc list-inside space-y-0.5">
+            <li><code>admin</code> &rarr; <%= t('admin') %></li>
+            <li><code>editor</code> / <code>writer</code> &rarr; <%= t('editor') %></li>
+            <li><code>viewer</code> &rarr; <%= t('viewer') %></li>
+          </ul>
+        </div>
       <% end %>
       <div class="flex items-center gap-3 pt-2">
         <%= f.button button_title(title: t('save'), disabled_with: t('saving')), class: 'base-button' %>
