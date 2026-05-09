@@ -2,6 +2,13 @@
 
 module Users
   class OmniauthCallbacksController < Devise::OmniauthCallbacksController
+    ROLE_CLAIM_MAP = {
+      'admin' => User::ADMIN_ROLE,
+      'editor' => User::EDITOR_ROLE,
+      'writer' => User::EDITOR_ROLE,
+      'viewer' => User::VIEWER_ROLE
+    }.freeze
+
     def oidc
       auth    = request.env['omniauth.auth']
       account = resolve_account
@@ -18,13 +25,7 @@ module Users
       identity = UserOauthIdentity.find_by(provider: auth.provider, uid: auth.uid)
       user     = identity&.user || User.find_by(email: email, account: account)
 
-      mapped_role = role_from_claims(auth, config)
-
-      if user
-        user.update(role: mapped_role) if mapped_role && user.role != mapped_role
-      else
-        user = provision_sso_user(account, email, auth, mapped_role)
-      end
+      user = sync_sso_user(user, account, email, auth, role_from_claims(auth, config))
 
       unless user.active_for_authentication?
         return redirect_to new_user_session_path, alert: I18n.t('your_account_is_locked')
@@ -79,12 +80,14 @@ module Users
       )
     end
 
-    ROLE_CLAIM_MAP = {
-      'admin'  => User::ADMIN_ROLE,
-      'editor' => User::EDITOR_ROLE,
-      'writer' => User::EDITOR_ROLE,
-      'viewer' => User::VIEWER_ROLE
-    }.freeze
+    def sync_sso_user(user, account, email, auth, mapped_role)
+      if user
+        user.update(role: mapped_role) if mapped_role && user.role != mapped_role
+        user
+      else
+        provision_sso_user(account, email, auth, mapped_role)
+      end
+    end
 
     def role_from_claims(auth, config)
       attribute = config&.dig('role_attribute').to_s.strip
