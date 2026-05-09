@@ -8,4 +8,4 @@
     </p>
   <% end %>
 </div>
-<script>document.getElementById('sso-redirect-form').submit();</script>
+<script nonce="<%= content_security_policy_nonce %>">document.getElementById('sso-redirect-form').submit();</script>
