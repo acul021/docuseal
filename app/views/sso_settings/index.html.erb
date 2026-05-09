@@ -109,6 +109,27 @@
           </div>
         </label>
       </div>
+      <div class="form-control">
+        <label class="label cursor-pointer justify-start gap-3">
+          <% auto_redirect = current_account.account_configs.find_by(key: AccountConfig::SSO_AUTO_REDIRECT_KEY) %>
+          <% auto_redirect_enabled = auto_redirect&.value == true %>
+          <% if auto_redirect_enabled %>
+            <%= button_to t('sso_disable_force'), account_config_path(auto_redirect),
+                          method: :delete,
+                          class: 'toggle toggle-primary toggle-checked',
+                          data: { turbo_confirm: t('are_you_sure') } %>
+          <% else %>
+            <%= button_to t('sso_enable_force'), account_configs_path,
+                          params: { account_config: { key: AccountConfig::SSO_AUTO_REDIRECT_KEY, value: '1' } },
+                          class: 'toggle toggle-primary',
+                          method: :post %>
+          <% end %>
+          <div>
+            <p class="font-medium"><%= t('sso_auto_redirect') %></p>
+            <p class="text-sm text-gray-500"><%= t('sso_auto_redirect_hint') %></p>
+          </div>
+        </label>
+      </div>
     <% end %>
   </div>
   <div class="w-0 md:w-52"></div>

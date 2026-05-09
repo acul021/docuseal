@@ -418,6 +418,9 @@ en: &en
   sso_uid_field_hint: The OIDC claim used as the stable user identifier. Defaults to "sub".
   sso_role_attribute: Role attribute
   sso_role_attribute_hint: 'OIDC claim that carries the user role. When set, the user role is synced on each login. Recognized values:'
+  sso_auto_redirect: Auto-redirect to SSO
+  sso_auto_redirect_hint: Send users straight to the SSO provider when they hit the sign-in page. The email/password form remains reachable at /users/sign_in?sso=skip.
+  sso_sign_in_with_password_instead: Sign in with email and password instead
   sso_force_login: Force SSO login
   sso_force_login_hint: Users must authenticate via SSO. Email/password login is disabled.
   sso_enable_force: Enable

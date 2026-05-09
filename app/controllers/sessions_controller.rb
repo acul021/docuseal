@@ -7,6 +7,12 @@ class SessionsController < Devise::SessionsController
   around_action :with_browser_locale
 
   def new
+    if @sso_enabled && !Docuseal.multitenant? && params[:sso] != 'skip' &&
+       sso_auto_redirect?(Account.first)
+      session[:oauth_account_uuid] = Account.first.uuid
+      return render :redirect_to_sso
+    end
+
     super
   end
 
@@ -65,6 +71,13 @@ class SessionsController < Devise::SessionsController
 
   def force_sso_auth?(account)
     config = AccountConfig.find_by(account: account, key: AccountConfig::FORCE_SSO_AUTH_KEY)
+    config&.value == true
+  end
+
+  def sso_auto_redirect?(account)
+    return false unless account
+
+    config = AccountConfig.find_by(account: account, key: AccountConfig::SSO_AUTO_REDIRECT_KEY)
     config&.value == true
   end
 

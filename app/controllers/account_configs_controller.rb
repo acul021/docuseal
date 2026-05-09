@@ -18,6 +18,7 @@ class AccountConfigsController < ApplicationController
     AccountConfig::DOWNLOAD_LINKS_AUTH_KEY,
     AccountConfig::DOWNLOAD_LINKS_EXPIRE_KEY,
     AccountConfig::FORCE_SSO_AUTH_KEY,
+    AccountConfig::SSO_AUTO_REDIRECT_KEY,
     AccountConfig::FLATTEN_RESULT_PDF_KEY,
     AccountConfig::ENFORCE_SIGNING_ORDER_KEY,
     AccountConfig::WITH_FILE_LINKS_KEY,

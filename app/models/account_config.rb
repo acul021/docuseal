@@ -42,6 +42,7 @@ class AccountConfig < ApplicationRecord
   DOWNLOAD_LINKS_AUTH_KEY = 'download_links_auth'
   DOWNLOAD_LINKS_EXPIRE_KEY = 'download_links_expire'
   FORCE_SSO_AUTH_KEY = 'force_sso_auth'
+  SSO_AUTO_REDIRECT_KEY = 'sso_auto_redirect'
   FLATTEN_RESULT_PDF_KEY = 'flatten_result_pdf'
   ROTATE_INCREMENTAL_PDF_KEY = 'rotate_incremental_pdf'
   WITH_SIGNATURE_ID = 'with_signature_id'
