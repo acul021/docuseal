@@ -41,9 +41,7 @@ class SsoSettingsController < ApplicationController
       end
 
       # Parse space/comma-separated scope into an array of strings
-      if value['scope'].is_a?(String)
-        value['scope'] = value['scope'].split(/[\s,]+/).map(&:strip).compact_blank
-      end
+      value['scope'] = value['scope'].split(/[\s,]+/).map(&:strip).compact_blank if value['scope'].is_a?(String)
 
       # Keep existing client_secret if the field was left blank
       if value['client_secret'].blank? && @encrypted_config.value.is_a?(Hash)
