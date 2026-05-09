@@ -67,8 +67,7 @@ module Users
     end
 
     def provision_sso_user(account, email, auth, mapped_role = nil)
-      first_name = auth.info.first_name.presence || auth.info.name.to_s.split(' ', 2).first
-      last_name  = auth.info.last_name.presence  || auth.info.name.to_s.split(' ', 2).last
+      first_name, last_name = names_from_auth(auth)
 
       account.users.create!(
         email: email,
@@ -81,12 +80,28 @@ module Users
     end
 
     def sync_sso_user(user, account, email, auth, mapped_role)
-      if user
-        user.update(role: mapped_role) if mapped_role && user.role != mapped_role
-        user
-      else
-        provision_sso_user(account, email, auth, mapped_role)
-      end
+      return provision_sso_user(account, email, auth, mapped_role) unless user
+
+      attrs = {}
+      attrs[:role] = mapped_role if mapped_role && user.role != mapped_role
+
+      first_name, last_name = names_from_auth(auth)
+      attrs[:first_name] = first_name if first_name.present? && user.first_name != first_name
+      attrs[:last_name]  = last_name  if last_name.present?  && user.last_name  != last_name
+
+      user.update(attrs) if attrs.any?
+      user
+    end
+
+    def names_from_auth(auth)
+      first = auth.info.first_name.to_s.strip
+      last  = auth.info.last_name.to_s.strip
+      return [first, last] if first.present? && last.present?
+
+      full = auth.info.name.to_s.strip
+      full = "#{first} #{last}".strip if full.blank?
+      parts = full.split(/\s+/, 2)
+      [parts.first.to_s, parts.last.to_s == parts.first.to_s ? '' : parts.last.to_s]
     end
 
     def role_from_claims(auth, config)
