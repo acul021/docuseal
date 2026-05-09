@@ -61,6 +61,14 @@
           <p class="text-xs text-gray-500 mt-1"><%= t('sso_uid_field_hint') %></p>
         </div>
         <div class="form-control">
+          <%= ff.label :scope, "#{t('sso_scope')} (#{t('optional')})", class: 'label' %>
+          <%= ff.text_field :scope,
+                            value: Array(value['scope']).join(' ').presence || 'openid email profile',
+                            placeholder: 'openid email profile',
+                            class: 'base-input' %>
+          <p class="text-xs text-gray-500 mt-1"><%= t('sso_scope_hint') %></p>
+        </div>
+        <div class="form-control">
           <%= ff.label :role_attribute, "#{t('sso_role_attribute')} (#{t('optional')})", class: 'label' %>
           <%= ff.text_field :role_attribute,
                             value: value['role_attribute'],

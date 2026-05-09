@@ -40,6 +40,11 @@ class SsoSettingsController < ApplicationController
         value['email_domains'] = value['email_domains'].split(/[\s,]+/).map(&:strip).compact_blank
       end
 
+      # Parse space/comma-separated scope into an array of strings
+      if value['scope'].is_a?(String)
+        value['scope'] = value['scope'].split(/[\s,]+/).map(&:strip).compact_blank
+      end
+
       # Keep existing client_secret if the field was left blank
       if value['client_secret'].blank? && @encrypted_config.value.is_a?(Hash)
         value['client_secret'] = @encrypted_config.value['client_secret']
