@@ -41,7 +41,7 @@ module Accounts
     )
 
     rel.where.not(account: account.linked_accounts.where.not(archived_at: nil))
-       .where.not(role: :integration).active.count
+       .where('role IS DISTINCT FROM ?', User::INTEGRATION_ROLE).active.count
   end
 
   def find_or_create_testing_user(account)

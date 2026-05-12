@@ -9,11 +9,11 @@ class UsersController < ApplicationController
   def index
     @users =
       if params[:status] == 'archived'
-        @users.archived.where.not(role: User::INTEGRATION_ROLE)
+        @users.archived.where('role IS DISTINCT FROM ?', User::INTEGRATION_ROLE)
       elsif params[:status] == 'integration'
         @users.active.where(role: User::INTEGRATION_ROLE)
       else
-        @users.active.where.not(role: User::INTEGRATION_ROLE).or(@users.active.where(role: nil))
+        @users.active.where('role IS DISTINCT FROM ?', User::INTEGRATION_ROLE)
       end
 
     @users = @users.preload(:teams, account: :account_accesses)

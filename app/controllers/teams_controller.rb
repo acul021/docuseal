@@ -12,7 +12,7 @@ class TeamsController < ApplicationController
   end
 
   def show
-    @available_users = current_account.users.active.where.not(role: User::INTEGRATION_ROLE).order(:email)
+    @available_users = current_account.users.active.where('role IS DISTINCT FROM ?', User::INTEGRATION_ROLE).order(:email)
     @available_folders = current_account.template_folders.order(:name)
   end
 
