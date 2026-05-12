@@ -46,9 +46,9 @@ class CreateTeamsAndFolderPermissions < ActiveRecord::Migration[7.1]
               unique: true,
               name: 'index_team_folder_permissions_on_team_and_folder'
 
-    backfill_admin_teams!
-
     change_column_null :users, :role, true
+
+    backfill_admin_teams!
   end
 
   def down
