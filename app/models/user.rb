@@ -100,7 +100,7 @@ class User < ApplicationRecord
   end
 
   def admin?
-    teams.where(is_admin: true).exists?
+    teams.exists?(is_admin: true)
   end
 
   def integration?

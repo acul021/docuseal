@@ -70,18 +70,8 @@ class UsersController < ApplicationController
     attrs = user_params.compact_blank
     attrs = attrs.merge(user_params.slice(:archived_at)) if current_ability.can?(:create, @user)
 
-    if params.dig(:user, :account_id).present?
-      account = Account.accessible_by(current_ability).find(params.dig(:user, :account_id))
-
-      authorize!(:manage, account)
-
-      @user.account = account
-    end
-
-    requested_team_ids = params.dig(:user, :team_ids)
-    if requested_team_ids && current_ability.can?(:manage, @user) && current_user != @user
-      return render_with_error(:edit) unless apply_team_ids(@user, requested_team_ids)
-    end
+    reassign_account_if_requested
+    return render_with_error(:edit) unless sync_team_ids_if_requested
 
     excluded = current_user == @user ? %i[password otp_required_for_login] : %i[password]
     if @user.update(attrs.except(*excluded))
@@ -103,9 +93,7 @@ class UsersController < ApplicationController
       return redirect_to settings_users_path, notice: I18n.t('unable_to_remove_user')
     end
 
-    if last_admin_user?(@user)
-      return redirect_to settings_users_path, alert: I18n.t('at_least_one_admin_required')
-    end
+    return redirect_to settings_users_path, alert: I18n.t('at_least_one_admin_required') if last_admin_user?(@user)
 
     @user.update!(archived_at: Time.current)
 
@@ -113,6 +101,23 @@ class UsersController < ApplicationController
   end
 
   private
+
+  def reassign_account_if_requested
+    return if params.dig(:user, :account_id).blank?
+
+    account = Account.accessible_by(current_ability).find(params.dig(:user, :account_id))
+    authorize!(:manage, account)
+    @user.account = account
+  end
+
+  def sync_team_ids_if_requested
+    requested = params.dig(:user, :team_ids)
+    return true if requested.nil?
+    return true unless current_ability.can?(:manage, @user)
+    return true if current_user == @user
+
+    apply_team_ids(@user, requested)
+  end
 
   def build_user
     @user = current_account.users.new(user_params)
@@ -130,7 +135,7 @@ class UsersController < ApplicationController
   # Returns false (and adds an error to @user) if applying these ids would
   # orphan the account by emptying every admin team.
   def apply_team_ids(user, raw_ids)
-    ids = Array(raw_ids).map(&:to_s).reject(&:blank?).map(&:to_i).uniq
+    ids = Array(raw_ids).map(&:to_s).compact_blank.map(&:to_i).uniq
     accessible_team_ids = current_account.teams.where(id: ids).pluck(:id)
 
     if user.persisted? && would_orphan_admin?(user, accessible_team_ids)
@@ -147,7 +152,7 @@ class UsersController < ApplicationController
 
     admin_team_ids = current_account.teams.admin.pluck(:id)
     return false if admin_team_ids.empty?
-    return false if (new_team_ids & admin_team_ids).any? # user keeps an admin team
+    return false if new_team_ids.intersect?(admin_team_ids) # user keeps an admin team
 
     other_admins = TeamMembership.joins(:team)
                                  .where(teams: { account_id: current_account.id, is_admin: true })

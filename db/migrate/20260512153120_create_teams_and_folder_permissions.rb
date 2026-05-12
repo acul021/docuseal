@@ -43,7 +43,7 @@ class CreateTeamsAndFolderPermissions < ActiveRecord::Migration[7.1]
       t.timestamps
     end
     add_index :team_folder_permissions, %i[team_id template_folder_id], unique: true,
-              name: 'index_team_folder_permissions_on_team_and_folder'
+                                        name: 'index_team_folder_permissions_on_team_and_folder'
 
     backfill_admin_teams!
 

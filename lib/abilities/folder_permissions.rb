@@ -4,7 +4,7 @@ module Abilities
   # Resolves a user's effective role on each folder in their account.
   # Admin team members short-circuit to 'editor' on every folder.
   module FolderPermissions
-    Resolver = Struct.new(:user, :grants_by_folder, keyword_init: true) do
+    Resolver = Struct.new(:user, :grants_by_folder) do
       def admin?
         @admin ||= user.admin?
       end
@@ -37,7 +37,7 @@ module Abilities
     module_function
 
     def for(user)
-      return Resolver.new(user: user, grants_by_folder: {}) if user.admin?
+      return Resolver.new(user, {}) if user.admin?
 
       grants = TeamFolderPermission
                .where(team_id: user.team_ids)
@@ -47,7 +47,7 @@ module Abilities
         acc[folder_id] = TeamFolderPermission.higher(acc[folder_id], role)
       end
 
-      Resolver.new(user: user, grants_by_folder: collapsed)
+      Resolver.new(user, collapsed)
     end
   end
 end

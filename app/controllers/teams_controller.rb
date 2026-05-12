@@ -11,12 +11,12 @@ class TeamsController < ApplicationController
                             .includes(:users, team_folder_permissions: :template_folder)
   end
 
-  def new; end
-
   def show
     @available_users = current_account.users.active.where.not(role: User::INTEGRATION_ROLE).order(:email)
     @available_folders = current_account.template_folders.order(:name)
   end
+
+  def new; end
 
   def edit; end
 

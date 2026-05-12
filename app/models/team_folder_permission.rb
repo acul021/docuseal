@@ -23,10 +23,10 @@ class TeamFolderPermission < ApplicationRecord
   validates :role, inclusion: { in: ROLES }
   validates :team_id, uniqueness: { scope: :template_folder_id }
 
-  def self.higher(a, b)
-    return a if b.nil?
-    return b if a.nil?
+  def self.higher(lhs, rhs)
+    return lhs if rhs.nil?
+    return rhs if lhs.nil?
 
-    ROLE_RANK[a] >= ROLE_RANK[b] ? a : b
+    ROLE_RANK[lhs] >= ROLE_RANK[rhs] ? lhs : rhs
   end
 end

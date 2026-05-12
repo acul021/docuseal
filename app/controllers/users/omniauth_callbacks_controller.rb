@@ -98,7 +98,7 @@ module Users
         account.teams.create!(name: name, is_admin: false)
       end
 
-      target_ids = resolved_teams.map(&:id).to_set
+      target_ids = resolved_teams.to_set(&:id)
       current_ids = user.team_ids.to_set
 
       # Guard: never strip the last admin user out of every admin team.
@@ -158,7 +158,7 @@ module Users
       value = raw_info[attribute] || auth.info[attribute]
       return [] if value.blank?
 
-      Array(value).flat_map { |v| v.to_s.split(/[\s,]+/) }.map(&:strip).reject(&:blank?).uniq
+      Array(value).flat_map { |v| v.to_s.split(/[\s,]+/) }.map(&:strip).compact_blank.uniq
     end
 
     def email_domain_allowed?(email, config)

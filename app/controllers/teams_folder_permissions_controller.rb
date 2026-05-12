@@ -24,21 +24,17 @@ class TeamsFolderPermissionsController < ApplicationController
   end
 
   def upsert
-    folder = current_account.template_folders.find(permission_params[:template_folder_id])
-    role = permission_params[:role]
+    folder = current_account.template_folders.find(params.require(:team_folder_permission)[:template_folder_id])
+    role = params.require(:team_folder_permission)[:role].to_s
 
-    if role.blank? || role == 'none'
-      TeamFolderPermission.where(team_id: @team.id, template_folder_id: folder.id).destroy_all
-    else
+    if TeamFolderPermission::ROLES.include?(role)
       record = TeamFolderPermission.find_or_initialize_by(team_id: @team.id, template_folder_id: folder.id)
       record.role = role
       record.save!
+    else
+      TeamFolderPermission.where(team_id: @team.id, template_folder_id: folder.id).destroy_all
     end
 
     redirect_to settings_team_path(@team), notice: I18n.t('changes_have_been_saved')
-  end
-
-  def permission_params
-    params.require(:team_folder_permission).permit(:template_folder_id, :role)
   end
 end

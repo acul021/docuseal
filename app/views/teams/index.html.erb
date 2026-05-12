@@ -38,8 +38,8 @@
               <td class="flex items-center space-x-2 justify-end">
                 <%= link_to t('edit'), edit_settings_team_path(team), class: 'btn btn-outline btn-xs' %>
                 <%= button_to t('remove'), settings_team_path(team), method: :delete,
-                              class: 'btn btn-outline btn-error btn-xs',
-                              data: { turbo_confirm: t('are_you_sure_') } %>
+                                                                     class: 'btn btn-outline btn-error btn-xs',
+                                                                     data: { turbo_confirm: t('are_you_sure_') } %>
               </td>
             </tr>
           <% end %>

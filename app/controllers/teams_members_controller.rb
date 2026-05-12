@@ -15,9 +15,7 @@ class TeamsMembersController < ApplicationController
   def destroy
     authorize!(:manage, @team)
 
-    if last_admin_user?
-      return redirect_to settings_team_path(@team), alert: I18n.t('at_least_one_admin_required')
-    end
+    return redirect_to settings_team_path(@team), alert: I18n.t('at_least_one_admin_required') if last_admin_user?
 
     TeamMembership.where(team_id: @team.id, user_id: params.require(:id)).destroy_all
     redirect_to settings_team_path(@team), notice: I18n.t('changes_have_been_saved')
