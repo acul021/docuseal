@@ -418,6 +418,18 @@ en: &en
   sso_uid_field_hint: The OIDC claim used as the stable user identifier. Defaults to "sub".
   sso_role_attribute: Role attribute
   sso_role_attribute_hint: 'OIDC claim that carries the user role. When set, the user role is synced on each login. Recognized values:'
+  sso_team_attribute: Team attribute
+  sso_team_attribute_hint: 'OIDC claim that carries a list of team names. Accepts arrays or comma/space-separated strings. Memberships are synced on each login; unknown team names are skipped unless auto-create is enabled.'
+  sso_auto_create_teams: Auto-create unknown teams
+  sso_auto_create_teams_hint: 'When enabled, team names from the claim that do not yet exist are created automatically with no folder permissions. An admin must grant folder access afterwards.'
+  teams: Teams
+  team: Team
+  new_team: New team
+  admin_team: Admin team
+  admin_team_hint: 'Admin teams have full read/write access to every folder and to account settings.'
+  folder_permissions: Folder permissions
+  no_access: No access
+  at_least_one_admin_required: 'At least one user must remain in an admin team.'
   sso_scope: OIDC scopes
   sso_scope_hint: Space-separated list of scopes to request. Add your provider's custom scope here (e.g. "docuseal") so its claims are returned. Defaults to "openid email profile".
   sso_auto_redirect: Auto-redirect to SSO

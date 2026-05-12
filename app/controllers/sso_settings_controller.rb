@@ -48,6 +48,9 @@ class SsoSettingsController < ApplicationController
         value['client_secret'] = @encrypted_config.value['client_secret']
       end
 
+      # Coerce auto_create_teams checkbox to a boolean ('1' / '0' / nil)
+      value['auto_create_teams'] = ActiveModel::Type::Boolean.new.cast(value['auto_create_teams'])
+
       value.compact_blank!
       p[:value] = value
     end

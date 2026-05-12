@@ -47,11 +47,11 @@
 #  fk_rails_...  (account_id => accounts.id)
 #
 class User < ApplicationRecord
-  ROLES = [
-    ADMIN_ROLE  = 'admin',
-    EDITOR_ROLE = 'editor',
-    VIEWER_ROLE = 'viewer'
-  ].freeze
+  # The `role` column survives only as a flag for non-human accounts
+  # ('integration') and the multitenant SaaS super-admin ('superadmin').
+  # Human user permissions are driven entirely by team membership.
+  INTEGRATION_ROLE = 'integration'
+  SUPERADMIN_ROLE  = 'superadmin'
 
   EMAIL_REGEXP = /[^@;,<>\s]+@[^@;,<>\s]+/
 
@@ -71,6 +71,8 @@ class User < ApplicationRecord
   has_many :encrypted_configs, dependent: :destroy, class_name: 'EncryptedUserConfig'
   has_many :email_messages, dependent: :destroy, foreign_key: :author_id, inverse_of: :author
   has_many :oauth_identities, class_name: 'UserOauthIdentity', dependent: :destroy
+  has_many :team_memberships, dependent: :destroy
+  has_many :teams, through: :team_memberships
 
   devise :two_factor_authenticatable, :recoverable, :rememberable, :validatable, :trackable, :lockable,
          :omniauthable, omniauth_providers: [:oidc]
@@ -79,7 +81,9 @@ class User < ApplicationRecord
 
   scope :active, -> { where(archived_at: nil) }
   scope :archived, -> { where.not(archived_at: nil) }
-  scope :admins, -> { where(role: ADMIN_ROLE) }
+  scope :admins, -> { joins(:teams).where(teams: { is_admin: true }).distinct }
+  scope :integration, -> { where(role: INTEGRATION_ROLE) }
+  scope :human, -> { where.not(role: INTEGRATION_ROLE).or(where(role: nil)) }
 
   validates :email, format: { with: /\A[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\z/ }
 
@@ -96,15 +100,15 @@ class User < ApplicationRecord
   end
 
   def admin?
-    role == ADMIN_ROLE
+    teams.where(is_admin: true).exists?
   end
 
-  def editor?
-    role == EDITOR_ROLE
+  def integration?
+    role == INTEGRATION_ROLE
   end
 
-  def viewer?
-    role == VIEWER_ROLE
+  def superadmin?
+    role == SUPERADMIN_ROLE
   end
 
   def sidekiq?

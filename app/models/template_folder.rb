@@ -37,6 +37,8 @@ class TemplateFolder < ApplicationRecord
                         dependent: :destroy
   has_many :active_templates, -> { where(archived_at: nil) },
            class_name: 'Template', dependent: :destroy, foreign_key: :folder_id, inverse_of: :folder
+  has_many :team_folder_permissions, dependent: :destroy
+  has_many :teams, through: :team_folder_permissions
 
   scope :active, -> { where(archived_at: nil) }
 

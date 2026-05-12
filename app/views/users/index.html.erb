@@ -45,7 +45,7 @@
               <%= t('email') %>
             </th>
             <th>
-              <%= t('role') %>
+              <%= t('teams') %>
             </th>
             <th>
               <%= t('last_session') %>
@@ -69,10 +69,16 @@
                   <%= user.email %>
                 <% end %>
               </td>
-              <td>
-                <span class="badge badge-info badge-outline whitespace-nowrap">
-                  <%= t(user.role) %>
-                </span>
+              <td class="space-x-1">
+                <% if user.integration? %>
+                  <span class="badge badge-info badge-outline whitespace-nowrap"><%= t('integration') %></span>
+                <% else %>
+                  <% user.teams.each do |team| %>
+                    <span class="badge badge-outline whitespace-nowrap <%= 'badge-warning' if team.is_admin? %>">
+                      <%= team.name %>
+                    </span>
+                  <% end %>
+                <% end %>
               </td>
               <td>
                 <%= user.current_sign_in_at ? l(user.current_sign_in_at.in_time_zone(current_account.timezone), format: :short, locale: current_account.locale) : '-' %>

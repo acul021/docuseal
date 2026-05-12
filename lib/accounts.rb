@@ -45,7 +45,10 @@ module Accounts
   end
 
   def find_or_create_testing_user(account)
-    user = User.where(role: :admin).order(:id).find_by(account: account.testing_accounts)
+    user = User.joins(:teams)
+               .where(teams: { is_admin: true })
+               .where(account: account.testing_accounts)
+               .order(:id).first
 
     return user if user
 
@@ -58,13 +61,17 @@ module Accounts
       original_email = account.users.order(:id).first.email
       test_email = generate_unique_test_email(original_email)
 
-      testing_account.users.create!(
+      new_user = testing_account.users.create!(
         email: test_email,
         first_name: 'Testing',
         last_name: 'Environment',
-        password: SecureRandom.hex,
-        role: :admin
+        password: SecureRandom.hex
       )
+
+      admin_team = testing_account.teams.create!(name: Team::DEFAULT_ADMIN_NAME, is_admin: true)
+      admin_team.users << new_user
+
+      new_user
     end
   end
 

@@ -1,4 +1,20 @@
-<div class="form-control">
-  <%= f.label :role, class: 'label' %>
-  <%= f.select :role, options_for_select([[t('admin'), 'admin'], [t('editor'), 'editor'], [t('viewer'), 'viewer']], f.object.role), {}, class: 'base-select' %>
-</div>
+<% teams = current_account.teams.order(is_admin: :desc, name: :asc) %>
+<% if teams.any? %>
+  <div class="form-control">
+    <label class="label"><%= t('teams') %></label>
+    <div class="space-y-1">
+      <% teams.each do |team| %>
+        <label class="flex items-center gap-2">
+          <%= check_box_tag 'user[team_ids][]', team.id,
+                            f.object.team_ids.include?(team.id),
+                            class: 'checkbox checkbox-sm' %>
+          <span><%= team.name %></span>
+          <% if team.is_admin? %>
+            <span class="badge badge-warning badge-outline badge-sm"><%= t('admin') %></span>
+          <% end %>
+        </label>
+      <% end %>
+    </div>
+    <%= hidden_field_tag 'user[team_ids][]', '' %>
+  </div>
+<% end %>

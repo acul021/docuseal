@@ -36,6 +36,9 @@ class SetupController < ApplicationController
       @account.encrypted_configs.create!(encrypted_configs)
       @account.account_configs.create!(key: :fulltext_search, value: true) if SearchEntry.table_exists?
 
+      admin_team = @account.teams.create!(name: Team::DEFAULT_ADMIN_NAME, is_admin: true)
+      admin_team.users << @user
+
       Docuseal.refresh_default_url_options!
 
       sign_in(@user)
@@ -49,9 +52,9 @@ class SetupController < ApplicationController
   private
 
   def user_params
-    return { role: User::ADMIN_ROLE } unless params[:user]
+    return {} unless params[:user]
 
-    params.require(:user).permit(:first_name, :last_name, :email, :password).merge(role: User::ADMIN_ROLE)
+    params.require(:user).permit(:first_name, :last_name, :email, :password)
   end
 
   def account_params

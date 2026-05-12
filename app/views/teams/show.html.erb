@@ -1,0 +1,77 @@
+<div class="flex-wrap space-y-4 md:flex md:flex-nowrap md:space-y-0 md:space-x-10">
+  <%= render 'shared/settings_nav' %>
+  <div class="md:flex-grow">
+    <div class="flex items-end gap-2 mb-6">
+      <h1 class="text-4xl font-bold"><%= @team.name %></h1>
+      <% if @team.is_admin? %>
+        <span class="badge badge-warning badge-outline"><%= t('admin') %></span>
+      <% end %>
+      <div class="ml-auto">
+        <%= link_to t('edit'), edit_settings_team_path(@team), class: 'btn btn-outline btn-sm' %>
+      </div>
+    </div>
+
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold mb-3"><%= t('users') %></h2>
+      <%= form_with url: settings_team_members_path(@team), method: :post, class: 'flex gap-2 mb-4' do |f| %>
+        <%= f.select :user_id,
+                     options_from_collection_for_select(@available_users - @team.users, :id, :friendly_name),
+                     { include_blank: t('select') }, class: 'base-select flex-grow' %>
+        <%= f.submit t('add'), class: 'btn btn-primary' %>
+      <% end %>
+      <ul class="divide-y border rounded">
+        <% @team.users.order(:email).each do |u| %>
+          <li class="flex items-center justify-between px-3 py-2">
+            <span><%= u.friendly_name %></span>
+            <%= button_to t('remove'), settings_team_member_path(@team, u),
+                          method: :delete,
+                          class: 'btn btn-outline btn-error btn-xs',
+                          data: { turbo_confirm: t('are_you_sure_') } %>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+
+    <% unless @team.is_admin? %>
+      <section>
+        <h2 class="text-2xl font-semibold mb-1"><%= t('folder_permissions') %></h2>
+        <p class="text-sm text-gray-500 mb-3">
+          <%= t('admin_team_hint') %>
+        </p>
+        <table class="table w-full">
+          <thead class="bg-base-200">
+            <tr class="text-neutral uppercase">
+              <th><%= t('folder', default: 'Folder') %></th>
+              <th><%= t('role') %></th>
+              <th class="text-right" width="1px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @available_folders.each do |folder| %>
+              <% grant = @team.team_folder_permissions.find { |p| p.template_folder_id == folder.id } %>
+              <tr>
+                <td><%= folder.full_name %></td>
+                <td>
+                  <%= form_with url: settings_team_folder_permissions_path(@team), method: :post,
+                                class: 'flex gap-2 items-center' do |f| %>
+                    <%= hidden_field_tag 'team_folder_permission[template_folder_id]', folder.id %>
+                    <%= select_tag 'team_folder_permission[role]',
+                                   options_for_select(
+                                     [[t('no_access'), 'none'],
+                                      [t('viewer'), TeamFolderPermission::VIEWER],
+                                      [t('editor'), TeamFolderPermission::EDITOR]],
+                                     grant&.role || 'none'
+                                   ),
+                                   class: 'base-select' %>
+                    <%= submit_tag t('save'), class: 'btn btn-outline btn-xs' %>
+                  <% end %>
+                </td>
+                <td></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </section>
+    <% end %>
+  </div>
+</div>

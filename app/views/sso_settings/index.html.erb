@@ -69,17 +69,24 @@
           <p class="text-xs text-gray-500 mt-1"><%= t('sso_scope_hint') %></p>
         </div>
         <div class="form-control">
-          <%= ff.label :role_attribute, "#{t('sso_role_attribute')} (#{t('optional')})", class: 'label' %>
-          <%= ff.text_field :role_attribute,
-                            value: value['role_attribute'],
-                            placeholder: 'docuseal_role',
+          <%= ff.label :team_attribute, "#{t('sso_team_attribute')} (#{t('optional')})", class: 'label' %>
+          <%= ff.text_field :team_attribute,
+                            value: value['team_attribute'],
+                            placeholder: 'docuseal_teams',
                             class: 'base-input' %>
-          <p class="text-xs text-gray-500 mt-1"><%= t('sso_role_attribute_hint') %></p>
-          <ul class="text-xs text-gray-500 mt-1 list-disc list-inside space-y-0.5">
-            <li><code>admin</code> &rarr; <%= t('admin') %></li>
-            <li><code>editor</code> / <code>writer</code> &rarr; <%= t('editor') %></li>
-            <li><code>viewer</code> &rarr; <%= t('viewer') %></li>
-          </ul>
+          <p class="text-xs text-gray-500 mt-1"><%= t('sso_team_attribute_hint') %></p>
+        </div>
+        <div class="form-control">
+          <label class="label cursor-pointer justify-start gap-3">
+            <%= ff.check_box :auto_create_teams,
+                             { checked: ActiveModel::Type::Boolean.new.cast(value['auto_create_teams']),
+                               class: 'checkbox checkbox-primary' },
+                             '1', '0' %>
+            <div>
+              <span class="font-medium"><%= t('sso_auto_create_teams') %></span>
+              <p class="text-xs text-gray-500"><%= t('sso_auto_create_teams_hint') %></p>
+            </div>
+          </label>
         </div>
       <% end %>
       <div class="flex items-center gap-3 pt-2">

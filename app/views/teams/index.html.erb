@@ -1,0 +1,50 @@
+<div class="flex-wrap space-y-4 md:flex md:flex-nowrap md:space-y-0 md:space-x-10">
+  <%= render 'shared/settings_nav' %>
+  <div class="md:flex-grow">
+    <div class="flex flex-col md:flex-row md:flex-wrap gap-2 md:justify-between md:items-end mb-4 min-h-12">
+      <h1 class="text-4xl font-bold"><%= t('teams') %></h1>
+      <%= link_to new_settings_team_path, class: 'btn btn-primary btn-md gap-2 w-full md:w-fit' do %>
+        <%= svg_icon('plus', class: 'w-6 h-6') %>
+        <span><%= t('new_team') %></span>
+      <% end %>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="table w-full table-lg">
+        <thead class="bg-base-200">
+          <tr class="text-neutral uppercase">
+            <th><%= t('name') %></th>
+            <th><%= t('users') %></th>
+            <th><%= t('folder_permissions') %></th>
+            <th class="text-right" width="1px"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @teams.each do |team| %>
+            <tr>
+              <td>
+                <%= link_to team.name, settings_team_path(team), class: 'link link-hover font-medium' %>
+                <% if team.is_admin? %>
+                  <span class="badge badge-warning badge-outline ml-2"><%= t('admin') %></span>
+                <% end %>
+              </td>
+              <td><%= team.users.size %></td>
+              <td>
+                <% if team.is_admin? %>
+                  <span class="text-sm text-gray-500"><%= t('admin_team_hint') %></span>
+                <% else %>
+                  <%= team.team_folder_permissions.size %>
+                <% end %>
+              </td>
+              <td class="flex items-center space-x-2 justify-end">
+                <%= link_to t('edit'), edit_settings_team_path(team), class: 'btn btn-outline btn-xs' %>
+                <%= button_to t('remove'), settings_team_path(team), method: :delete,
+                              class: 'btn btn-outline btn-error btn-xs',
+                              data: { turbo_confirm: t('are_you_sure_') } %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

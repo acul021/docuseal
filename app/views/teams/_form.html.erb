@@ -1,0 +1,17 @@
+<%= form_for team, url: team.persisted? ? settings_team_path(team) : settings_teams_path,
+              html: { class: 'space-y-4' } do |f| %>
+  <div class="form-control">
+    <%= f.label :name, t('name'), class: 'label' %>
+    <%= f.text_field :name, required: true, class: 'base-input' %>
+  </div>
+  <div class="form-control">
+    <label class="label cursor-pointer justify-start gap-3">
+      <%= f.check_box :is_admin, class: 'checkbox checkbox-primary' %>
+      <div>
+        <span class="font-medium"><%= t('admin_team') %></span>
+        <p class="text-xs text-gray-500"><%= t('admin_team_hint') %></p>
+      </div>
+    </label>
+  </div>
+  <%= f.button button_title(title: t('save'), disabled_with: t('saving')), class: 'base-button' %>
+<% end %>

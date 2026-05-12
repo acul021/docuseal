@@ -185,6 +185,10 @@ Rails.application.routes.draw do
     end
     resources :email, only: %i[index create], controller: 'email_smtp_settings'
     resources :sso, only: %i[index create destroy], controller: 'sso_settings'
+    resources :teams do
+      resources :folder_permissions, only: %i[create update destroy], controller: 'teams_folder_permissions'
+      resources :members, only: %i[create destroy], controller: 'teams_members'
+    end
     resources :notifications, only: %i[index create], controller: 'notifications_settings'
     resource :esign, only: %i[show create new update destroy], controller: 'esign_settings'
     resources :users, only: %i[index]
