@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_08_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_12_153120) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gin"
   enable_extension "pg_catalog.plpgsql"
@@ -413,6 +413,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_08_100000) do
     t.index ["submission_id"], name: "index_submitters_on_submission_id"
   end
 
+  create_table "team_folder_permissions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "role", null: false
+    t.bigint "team_id", null: false
+    t.bigint "template_folder_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["team_id", "template_folder_id"], name: "index_team_folder_permissions_on_team_and_folder", unique: true
+    t.index ["team_id"], name: "index_team_folder_permissions_on_team_id"
+    t.index ["template_folder_id"], name: "index_team_folder_permissions_on_template_folder_id"
+  end
+
+  create_table "team_memberships", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "team_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["team_id", "user_id"], name: "index_team_memberships_on_team_id_and_user_id", unique: true
+    t.index ["team_id"], name: "index_team_memberships_on_team_id"
+    t.index ["user_id"], name: "index_team_memberships_on_user_id"
+  end
+
+  create_table "teams", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.boolean "is_admin", default: false, null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index "account_id, lower((name)::text)", name: "index_teams_on_account_id_and_lower_name", unique: true
+    t.index ["account_id"], name: "index_teams_on_account_id"
+  end
+
   create_table "template_accesses", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "template_id", null: false
@@ -442,6 +473,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_08_100000) do
     t.datetime "updated_at", null: false
     t.index ["account_id", "template_id"], name: "index_template_sharings_on_account_id_and_template_id", unique: true
     t.index ["template_id"], name: "index_template_sharings_on_template_id"
+  end
+
+  create_table "template_versions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "author_id", null: false
+    t.datetime "created_at", null: false
+    t.text "data", null: false
+    t.string "sha1", null: false
+    t.bigint "template_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_template_versions_on_account_id"
+    t.index ["author_id"], name: "index_template_versions_on_author_id"
+    t.index ["template_id", "sha1"], name: "index_template_versions_on_template_id_and_sha1", unique: true
   end
 
   create_table "templates", force: :cascade do |t|
@@ -515,7 +559,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_08_100000) do
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
-    t.string "role", null: false
+    t.string "role"
     t.integer "sign_in_count", default: 0, null: false
     t.string "unconfirmed_email"
     t.string "unlock_token"
@@ -557,6 +601,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_08_100000) do
     t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.text "events", null: false
+    t.text "hmac_secret", null: false
     t.text "secret", null: false
     t.string "sha1", null: false
     t.datetime "updated_at", null: false
@@ -593,11 +638,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_08_100000) do
   add_foreign_key "submissions", "users", column: "created_by_user_id"
   add_foreign_key "submitter_versions", "submitters"
   add_foreign_key "submitters", "submissions"
+  add_foreign_key "team_folder_permissions", "teams"
+  add_foreign_key "team_folder_permissions", "template_folders"
+  add_foreign_key "team_memberships", "teams"
+  add_foreign_key "team_memberships", "users"
+  add_foreign_key "teams", "accounts"
   add_foreign_key "template_accesses", "templates"
   add_foreign_key "template_folders", "accounts"
   add_foreign_key "template_folders", "template_folders", column: "parent_folder_id"
   add_foreign_key "template_folders", "users", column: "author_id"
   add_foreign_key "template_sharings", "templates"
+  add_foreign_key "template_versions", "accounts"
+  add_foreign_key "template_versions", "templates"
+  add_foreign_key "template_versions", "users", column: "author_id"
   add_foreign_key "templates", "accounts"
   add_foreign_key "templates", "template_folders", column: "folder_id"
   add_foreign_key "templates", "users", column: "author_id"
